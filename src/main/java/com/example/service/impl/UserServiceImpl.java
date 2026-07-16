@@ -1,16 +1,12 @@
 package com.example.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import com.example.Enum.Role;
-import com.example.Enum.TaskStatus;
 import com.example.dto.request.RegisterRequest;
 import com.example.dto.response.UserResponseDto;
 import com.example.entity.User;
 import com.example.dto.request.UserRequestDto;
-import com.example.mapper.TaskMapper;
 import com.example.mapper.UserMapper;
 import com.example.service.IUserService;
 import com.example.repository.UserRepository;
@@ -31,7 +27,6 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserResponseDto createUser(RegisterRequest registerRequest, Role role) {
-
         User user = UserMapper.toEntity(registerRequest);
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -60,6 +55,9 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)){
+            throw new UserNotFoundException("User not found !!");
+        }
         userRepository.deleteById(id);
     }
 

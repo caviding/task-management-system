@@ -38,14 +38,13 @@ public class TaskServiceImpl implements ITaskService {
             User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
 
-            task.setUserId(userRepository.findByUsername(username).get().getId());
+            task.setUserId(user.getId());
             user.getTasks().add(task);
             userRepository.save(user);
 
             Task savedTask = taskRepository.findByTitleAndUserId(task.getTitle(), user.getId())
                     .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
 
-//            taskRepository.save(task);
             return TaskMapper.toDto(savedTask);
     }
 
@@ -65,10 +64,8 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskResponseDto getTaskById(Long id) {
-        if (!taskRepository.existsById(id)){
-            throw new TaskNotFoundException("Task not found !!");
-        }
-        return TaskMapper.toDto(taskRepository.findById(id).get());
+        return TaskMapper.toDto(taskRepository.findById(id)
+        .orElseThrow(() -> new TaskNotFoundException("Task not found !!")));
     }
 
     @Override
@@ -111,10 +108,8 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskResponseDto updateTask(Long id, TaskUpdateDto taskUpdateDto) {
-        if (!taskRepository.existsById(id)){
-            throw new TaskNotFoundException("Task not found !!");
-        }
-        Task task = taskRepository.findById(id).get();
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
         task.setTitle(taskUpdateDto.getTitle());
         task.setDescription(taskUpdateDto.getDescription());
         task.setStatus(taskUpdateDto.getStatus());

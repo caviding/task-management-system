@@ -1,5 +1,6 @@
 package com.example.dto.request;
 
+import lombok.Builder;
 import lombok.Data;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
 
 @Data
+@Builder
 public class UserRequestDto {
 
     @NotNull(message = "Username cannot be null")
