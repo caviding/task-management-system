@@ -95,10 +95,10 @@ class TaskServiceTest {
                 new UsernamePasswordAuthenticationToken("testUser", null , List.of());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-        when(taskRepository.findByTitleAndUserId(any(String.class), any(Long.class))).thenReturn(Optional.of(testTask));
+        when(taskRepository.findByTitleAndUserId(anyString(), any(Long.class))).thenReturn(Optional.of(testTask));
 
         TaskResponseDto result = sut.createTask(taskRequestDto);
 
@@ -108,9 +108,9 @@ class TaskServiceTest {
         assertEquals(testTask.getDescription(), result.getDescription());
         assertEquals(testTask.getStatus(), result.getStatus());
 
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(userRepository, times(1)).save(any(User.class));
-        verify(taskRepository, times(1)).findByTitleAndUserId(any(String.class), any(Long.class));
+        verify(taskRepository, times(1)).findByTitleAndUserId(anyString(), any(Long.class));
     }
 
     @Test
@@ -120,7 +120,7 @@ class TaskServiceTest {
                 new UsernamePasswordAuthenticationToken("unknownUser", null , List.of());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
                 () -> sut.createTask(taskRequestDto),
@@ -128,7 +128,7 @@ class TaskServiceTest {
         );
 
         assertEquals("User not found !!", exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
     }
 
     @Test
@@ -138,10 +138,10 @@ class TaskServiceTest {
                 new UsernamePasswordAuthenticationToken("testUser", null , List.of());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-        when(taskRepository.findByTitleAndUserId(any(String.class), any(Long.class))).thenReturn(Optional.empty());
+        when(taskRepository.findByTitleAndUserId(anyString(), any(Long.class))).thenReturn(Optional.empty());
 
         TaskNotFoundException exception = assertThrows(
                 TaskNotFoundException.class,
@@ -149,9 +149,9 @@ class TaskServiceTest {
                 "TaskNotFoundException should be thrown"
         );
         assertEquals("Task not found !!", exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(userRepository, times(1)).save(any(User.class));
-        verify(taskRepository, times(1)).findByTitleAndUserId(any(String.class), any(Long.class));
+        verify(taskRepository, times(1)).findByTitleAndUserId(anyString(), any(Long.class));
     }
 
     @Test
@@ -234,14 +234,14 @@ class TaskServiceTest {
 
         Long id = 1L;
         testUser.getTasks().add(testTask);
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
         when(taskRepository.findById(id)).thenReturn(Optional.of(testTask));
         doNothing().when(taskRepository).delete(any(Task.class));
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
         sut.deleteTask(id);
 
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(taskRepository, times(1)).findById(id);
         verify(taskRepository, times(1)).delete(any(Task.class));
         verify(userRepository, times(1)).save(any(User.class));
@@ -254,7 +254,7 @@ class TaskServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         Long id = 99L;
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
@@ -263,7 +263,7 @@ class TaskServiceTest {
         );
 
         assertEquals("User not found !!", exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(taskRepository, never()).findById(id);
         verify(taskRepository, never()).delete(any(Task.class));
         verify(userRepository, never()).save(any(User.class));
@@ -276,7 +276,7 @@ class TaskServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         Long id = 1L;
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
         when(taskRepository.findById(id)).thenReturn(Optional.empty());
 
         TaskNotFoundException exception = assertThrows(
@@ -286,7 +286,7 @@ class TaskServiceTest {
         );
 
         assertEquals("Task not found !!" , exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(taskRepository, times(1)).findById(id);
         verify(taskRepository, never()).delete(any(Task.class));
         verify(userRepository, never()).save(any(User.class));
@@ -299,7 +299,7 @@ class TaskServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         Long id = 1L;
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
         when(taskRepository.findById(id)).thenReturn(Optional.of(testTask));
 
         TaskUserMismatchException exception = assertThrows(
@@ -309,7 +309,7 @@ class TaskServiceTest {
         );
 
         assertEquals("This task is not assigned to this user !!" , exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(taskRepository, times(1)).findById(id);
         verify(taskRepository, never()).delete(any(Task.class));
         verify(userRepository, never()).save(any(User.class));
@@ -451,7 +451,7 @@ class TaskServiceTest {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("testUser", null, List.of());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.of(testUser));
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
         when(taskRepository.findByUserId(any(Long.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(testTask)));
 
         Page<TaskResponseDto> result = sut.getMyTasks(Pageable.unpaged());
@@ -462,7 +462,7 @@ class TaskServiceTest {
         assertEquals(testTask.getTitle(), result.getContent().get(0).getTitle());
         assertEquals(testTask.getDescription(), result.getContent().get(0).getDescription());
         assertEquals(testTask.getStatus(), result.getContent().get(0).getStatus());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(taskRepository, times(1)).findByUserId(any(Long.class), any(Pageable.class));
     }
 
@@ -472,7 +472,7 @@ class TaskServiceTest {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("testUser", null, List.of());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        when(userRepository.findByUsername(any(String.class))).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
@@ -480,7 +480,7 @@ class TaskServiceTest {
                 "UserNotFoundException should be thrown"
         );
         assertEquals("User not found !!", exception.getMessage());
-        verify(userRepository, times(1)).findByUsername(any(String.class));
+        verify(userRepository, times(1)).findByUsername(anyString());
         verify(taskRepository, never()).findByUserId(any(Long.class), any(Pageable.class));
     }
 
