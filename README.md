@@ -24,6 +24,8 @@ Angular, Vue) or mobile application.
 -   Spring Boot
 -   Spring Web
 -   Spring Data JPA
+-   Spring Security
+-   JWT
 -   Hibernate
 -   Maven
 -   MySQL
@@ -38,6 +40,7 @@ The project follows layered architecture:
 -   **Controller Layer** -- Handles HTTP requests and responses\
 -   **Service Layer** -- Contains business logic\
 -   **Repository Layer** -- Database operations\
+-   **Security Layer** -- Authentication and authorization\
 -   **Entity Layer** -- Database models\
 -   **DTO Layer** -- Request/Response models\
 -   **Global Exception Handling** -- Centralized error responses
@@ -50,8 +53,10 @@ The project follows layered architecture:
     │
     ├── src/main/java/com/example/taskmanagement
     │   ├── controller
+    │   ├── config
     │   ├── service
     │   ├── repository
+    │   ├── security
     │   ├── entity
     │   ├── mapper
     │   ├── Enum
@@ -59,7 +64,8 @@ The project follows layered architecture:
     │   ├── exception
     │   ├── handler
     │   ├── specifications
-    │   └── TaskManagementApplication.java
+    │   |── starter
+           ├── TaskManagementApplication.java
     │
     ├── src/main/resources
     │   └── application.properties
@@ -77,6 +83,8 @@ The project follows layered architecture:
 -   Get All Tasks\
 -   Get Task By ID\
 -   DTO Mapping\
+-   Authentication\
+-   Authorization\
 -   Pagination & Sorting\
 -   Specification\
 -   Validation Handling\
@@ -126,13 +134,13 @@ Application runs at:
 
 ## 📡 API Endpoints
 
-Method   Endpoint      Description
+  Method   Endpoint      Description
   -------- ------------- -----------------
-GET      /tasks        Get all tasks
-GET      /tasks/{id}   Get task by ID
-POST     /tasks        Create new task
-PUT      /tasks/{id}   Update task
-DELETE   /tasks/{id}   Delete task
+  GET      /tasks        Get all tasks
+  GET      /tasks/{id}   Get task by ID
+  POST     /tasks        Create new task
+  PUT      /tasks/{id}   Update task
+  DELETE   /tasks/{id}   Delete task
 
 ------------------------------------------------------------------------
 
@@ -167,8 +175,6 @@ Example:
 
 ## 🔮 Future Improvements
 
--   JWT Authentication\
--   Role-based Authorization\
 -   Swagger / OpenAPI\
 -   Unit & Integration Tests\
 -   Docker Support\
