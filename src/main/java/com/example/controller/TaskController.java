@@ -27,6 +27,7 @@ public class TaskController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public RootEntity<TaskResponseDto> createTask(@RequestBody @Valid TaskRequestDto taskRequestDto) {
         return RootEntity.success(taskService.createTask(taskRequestDto), HttpStatus.CREATED);
     }

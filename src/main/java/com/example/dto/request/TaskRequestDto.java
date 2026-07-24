@@ -1,5 +1,6 @@
 package com.example.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import com.example.Enum.TaskStatus;
@@ -8,9 +9,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TaskRequestDto {
 
     @NotNull(message = "Title cannot be null")
