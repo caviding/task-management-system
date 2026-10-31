@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.Enum.Role;
 import com.example.dto.request.RegisterRequest;
+import com.example.dto.response.UserUpdateResponse;
 import jakarta.validation.Valid;
 import com.example.entity.RootEntity;
 import com.example.dto.response.UserResponseDto;
@@ -63,8 +64,8 @@ public class UserController {
 
     @PutMapping({"/{id}","/{id}/"})
     @PreAuthorize("hasRole('ADMIN') or @userServiceImpl.isOwner(#id, authentication.name)")
-    public RootEntity<UserResponseDto> updateUser(@PathVariable @Positive(message = "Id cannot be negative !1") Long id,
-                                                  @RequestBody @Valid UserRequestDto userRequestDto) {
+    public RootEntity<UserUpdateResponse> updateUser(@PathVariable @Positive(message = "Id cannot be negative !1") Long id,
+                                                     @RequestBody @Valid UserRequestDto userRequestDto) {
         return RootEntity.success(userService.updateUser(id, userRequestDto),HttpStatus.OK);
     }
 }

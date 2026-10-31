@@ -52,7 +52,7 @@ public class TaskController {
         return RootEntity.success(null,HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping({"/{id}/status","/{id}/status"})
+    @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or @taskServiceImpl.isOwner(#id, authentication.name)")
     public RootEntity<TaskResponseDto> updateTaskStatus(@PathVariable @Positive(message = "Id cannot be negative !!") Long id,
                                                         @RequestParam(name = "status") TaskStatus status) {

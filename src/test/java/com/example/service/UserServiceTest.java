@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.example.dto.request.RegisterRequest;
 import com.example.dto.request.UserRequestDto;
 import com.example.dto.response.UserResponseDto;
+import com.example.dto.response.UserUpdateResponse;
 import com.example.entity.User;
 import static org.mockito.Mockito.*;
 import com.example.exception.UserAlreadyExistsException;
@@ -265,11 +266,11 @@ public class UserServiceTest {
         Long id = 1L;
         when(userRepository.findById(id)).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        UserResponseDto result = sut.updateUser(id, userRequestDto);
+        UserUpdateResponse result = sut.updateUser(id, userRequestDto);
 
         assertNotNull(result);
-        assertEquals(testUser.getId(), result.getId());
-        assertEquals(testUser.getUsername(), result.getUsername());
+        assertEquals(testUser.getId(), result.getUser().getId());
+        assertEquals(testUser.getUsername(), result.getUser().getUsername());
 
         verify(userRepository, times(1)).findById(id);
         verify(userRepository, times(1)).save(any(User.class));

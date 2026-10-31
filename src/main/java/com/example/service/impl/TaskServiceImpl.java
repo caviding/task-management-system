@@ -1,7 +1,5 @@
 package com.example.service.impl;
 
-import java.util.List;
-
 import com.example.entity.User;
 import com.example.entity.Task;
 import com.example.Enum.TaskStatus;
@@ -20,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import com.example.exception.UserNotFoundException;
 import com.example.exception.TaskNotFoundException;
 import com.example.specifications.TaskSpecification;
-import com.example.exception.TaskUserMismatchException;
 import org.springframework.data.jpa.domain.Specification;
 
 @Service
@@ -42,23 +39,17 @@ public class TaskServiceImpl implements ITaskService {
             user.getTasks().add(task);
             userRepository.save(user);
 
-            Task savedTask = taskRepository.findByTitleAndUserId(task.getTitle(), user.getId())
-                    .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
-
-            return TaskMapper.toDto(savedTask);
+            return TaskMapper.toDto(task);
     }
 
     @Override
     public TaskResponseDto createTaskById(Long userId, TaskRequestDto taskRequestDto) {
         Task task = TaskMapper.toEntity(taskRequestDto);
-        task.setId(userId);
+        task.setUserId(userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
-        List<Task> list = user.getTasks();
-        list.add(task);
-        user.setTasks(list);
+        user.getTasks().add(task);
         userRepository.save(user);
-        taskRepository.save(task);
         return TaskMapper.toDto(task);
     }
 
@@ -70,20 +61,14 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public void deleteTask(Long id) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user =userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
-
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
 
-        if (user.getTasks().contains(task)){
-            taskRepository.delete(task);
-            user.getTasks().remove(task);
-            userRepository.save(user);
-        }else {
-            throw new TaskUserMismatchException("This task is not assigned to this user !!");
-        }
+        User user =userRepository.findById(task.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+
+        user.getTasks().remove(task);
+        userRepository.save(user);
     }
 
     @Override
@@ -150,18 +135,16 @@ public class TaskServiceImpl implements ITaskService {
             userRepository.findById(user_id)
                     .orElseThrow(() -> new UserNotFoundException("User not found !!"));
         }
-        Specification<Task> spec = null;
+        Specification<Task> spec = (root, query, cb) -> cb.conjunction();
+
         if (user_id != null){
-            spec = TaskSpecification.hasUserId(user_id);
+            spec = spec.and(TaskSpecification.hasUserId(user_id));
         }
         if (status != null){
-            spec = TaskSpecification.hasStatus(status);
+            spec = spec.and(TaskSpecification.hasStatus(status));
         }
         if (title != null){
-            spec = TaskSpecification.hasTitle(title);
-        }
-        if (spec == null){
-            return taskRepository.findAll(pageable).map(TaskMapper::toDto);
+            spec = spec.and(TaskSpecification.hasTitle(title));
         }
         return taskRepository.findAll(spec,pageable).map(TaskMapper::toDto);
     }

@@ -30,6 +30,9 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
         if (userRepository.existsByUsername(registerRequest.getUsername())){
             throw new UserAlreadyExistsException("Username already exists !!");
         }
+        if (userRepository.existsByEmail(registerRequest.getEmail())){
+            throw new UserAlreadyExistsException("Email already exists !!");
+        }
         User user = User.builder()
                 .username(registerRequest.getUsername())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))

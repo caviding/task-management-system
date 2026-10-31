@@ -5,11 +5,14 @@ import java.util.Optional;
 import com.example.Enum.Role;
 import com.example.dto.request.RegisterRequest;
 import com.example.dto.response.UserResponseDto;
+import com.example.dto.response.UserUpdateResponse;
 import com.example.entity.User;
 import com.example.dto.request.UserRequestDto;
+import com.example.exception.UserAlreadyExistsException;
 import com.example.mapper.UserMapper;
 import com.example.service.IUserService;
 import com.example.repository.UserRepository;
+import com.example.service.jwt.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,9 +27,19 @@ public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JWTService jwtService;
 
     @Override
     public UserResponseDto createUser(RegisterRequest registerRequest, Role role) {
+
+        if (userRepository.existsByUsername(registerRequest.getUsername())){
+            throw new UserAlreadyExistsException("Username already exists !!");
+        }
+
+        if (userRepository.existsByEmail(registerRequest.getEmail())){
+            throw new UserAlreadyExistsException("Email already exists !!");
+        }
+
         User user = UserMapper.toEntity(registerRequest);
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -41,11 +54,14 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public UserResponseDto getProfile() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (username == null) {
-            throw new UserNotFoundException("User not found !!");
-        }
-        return UserMapper.toDto(userRepository.findByUsername(username).get());
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+
+        return UserMapper.toDto(user);
     }
 
     @Override
@@ -71,11 +87,41 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
+    public UserUpdateResponse updateUser(Long id, UserRequestDto userRequestDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+        if(userRepository.existsByUsername(userRequestDto.getUsername()) && !user.getUsername().equals(userRequestDto.getUsername())){
+            throw new UserAlreadyExistsException("Username already exists !!");
+        }
+        if(userRepository.existsByEmail(userRequestDto.getEmail()) && !user.getEmail().equals(userRequestDto.getEmail())){
+            throw new UserAlreadyExistsException("Email already exists !!");
+        }
+
+        String authenticatedUsername = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        String oldUsername = user.getUsername();
+
+        boolean updatingOwnProfile =
+                oldUsername.equals(authenticatedUsername);
+
+        boolean usernameChanged =
+                !oldUsername.equals(userRequestDto.getUsername());
+
         user.setUsername(userRequestDto.getUsername());
         user.setEmail(userRequestDto.getEmail());
-        return UserMapper.toDto(userRepository.save(user));
+
+        User savedUser = userRepository.save(user);
+        String newToken = null;
+
+        if (updatingOwnProfile && usernameChanged){
+            newToken = jwtService.generateToken(userRequestDto.getUsername());
+        }
+        return UserUpdateResponse.builder()
+                .user(UserMapper.toDto(savedUser))
+                .token(newToken)
+                .build();
     }
 }
