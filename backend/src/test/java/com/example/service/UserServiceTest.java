@@ -1,13 +1,11 @@
 package com.example.service;
 
 import com.example.Enum.Role;
-import static org.junit.jupiter.api.Assertions.*;
 import com.example.dto.request.RegisterRequest;
 import com.example.dto.request.UserRequestDto;
 import com.example.dto.response.UserResponseDto;
 import com.example.dto.response.UserUpdateResponse;
 import com.example.entity.User;
-import static org.mockito.Mockito.*;
 import com.example.exception.UserAlreadyExistsException;
 import com.example.exception.UserNotFoundException;
 import com.example.repository.UserRepository;
@@ -28,9 +26,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -57,7 +57,6 @@ public class UserServiceTest {
                 .email("test@gmail.com")
                 .password("encodedPassword")
                 .role(Role.USER)
-                .tasks(new ArrayList<>())
                 .build();
 
         userRequestDto = UserRequestDto.builder()
@@ -77,11 +76,13 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getUserById should return User response dto ")
+    @DisplayName("getUserById should return User response dto")
     void should_getUserById_returnUserResponseDto() {
 
         Long id = 1L;
-        when(userRepository.findById(id)).thenReturn(Optional.of(testUser));
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.of(testUser));
 
         UserResponseDto result = sut.getUserById(id);
 
@@ -98,7 +99,9 @@ public class UserServiceTest {
     void should_throwUserNotFoundExceptionWhenUserNotFound() {
 
         Long id = 5L;
-        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.empty());
 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
@@ -107,6 +110,7 @@ public class UserServiceTest {
         );
 
         assertEquals("User not found !!", exception.getMessage());
+
         verify(userRepository, times(1)).findById(id);
     }
 
@@ -114,68 +118,104 @@ public class UserServiceTest {
     @DisplayName("getAllUsers should return all users page")
     void should_getAllUsers_returnAllUsersPage() {
 
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(testUser)));
+        when(userRepository.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(testUser)));
 
-        Page<UserResponseDto> result = sut.getAllUsers(Pageable.unpaged()); // BU SETIR testUser listin return edecek
+        Page<UserResponseDto> result =
+                sut.getAllUsers(Pageable.unpaged());
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        assertEquals(testUser.getUsername(), result.getContent().get(0).getUsername());
-        assertEquals(testUser.getEmail(), result.getContent().get(0).getEmail());
-        assertEquals(testUser.getId(), result.getContent().get(0).getId());
+        assertEquals(
+                testUser.getUsername(),
+                result.getContent().get(0).getUsername()
+        );
+        assertEquals(
+                testUser.getEmail(),
+                result.getContent().get(0).getEmail()
+        );
+        assertEquals(
+                testUser.getId(),
+                result.getContent().get(0).getId()
+        );
 
-        verify(userRepository, times(1)).findAll(any(Pageable.class));
+        verify(userRepository, times(1))
+                .findAll(any(Pageable.class));
     }
 
     @Test
     @DisplayName("getAllUsers should return empty page")
     void should_getAllUsers_returnEmptyPageWhenNoUsersExists() {
 
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of()));
+        when(userRepository.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of()));
 
-        Page<UserResponseDto> result = sut.getAllUsers(Pageable.unpaged());
+        Page<UserResponseDto> result =
+                sut.getAllUsers(Pageable.unpaged());
 
         assertNotNull(result);
         assertEquals(0, result.getTotalElements());
         assertTrue(result.getContent().isEmpty());
 
-        verify(userRepository, times(1)).findAll(any(Pageable.class));
+        verify(userRepository, times(1))
+                .findAll(any(Pageable.class));
     }
 
     @Test
     @DisplayName("createUser should save user and return User response dto")
     void should_createUser_returnUserResponseDto() {
 
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class)))
+                .thenReturn(testUser);
 
-        UserResponseDto result = sut.createUser(registerRequest,Role.USER);
+        when(passwordEncoder.encode(anyString()))
+                .thenReturn("encodedPassword");
+
+        UserResponseDto result =
+                sut.createUser(registerRequest, Role.USER);
 
         assertNotNull(result);
         assertEquals(testUser.getId(), result.getId());
         assertEquals(testUser.getUsername(), result.getUsername());
         assertEquals(testUser.getEmail(), result.getEmail());
 
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(passwordEncoder, times(1)).encode(anyString());
+        verify(userRepository, times(1))
+                .save(any(User.class));
+
+        verify(passwordEncoder, times(1))
+                .encode(anyString());
     }
 
     @Test
     @DisplayName("createUser should throw UserAlreadyExistsException when user already exists")
     void should_createUser_throwUserAlreadyExistsExceptionwhenUserAlreadyExists() {
 
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenThrow(new UserAlreadyExistsException("User already exists !!"));
+        when(passwordEncoder.encode(anyString()))
+                .thenReturn("encodedPassword");
+
+        when(userRepository.save(any(User.class)))
+                .thenThrow(
+                        new UserAlreadyExistsException(
+                                "User already exists !!"
+                        )
+                );
 
         UserAlreadyExistsException exception = assertThrows(
                 UserAlreadyExistsException.class,
-                () -> sut.createUser(registerRequest,Role.USER),
+                () -> sut.createUser(registerRequest, Role.USER),
                 "UserAlreadyExistsException should be thrown"
         );
 
-        assertEquals("User already exists !!", exception.getMessage());
-        verify(userRepository, times(1)).save(any(User.class));
-        verify(passwordEncoder, times(1)).encode(anyString());
+        assertEquals(
+                "User already exists !!",
+                exception.getMessage()
+        );
+
+        verify(userRepository, times(1))
+                .save(any(User.class));
+
+        verify(passwordEncoder, times(1))
+                .encode(anyString());
     }
 
     @Test
@@ -183,10 +223,18 @@ public class UserServiceTest {
     void should_getProfile_returnUserResponseDto() {
 
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken("testUser", null, List.of());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                new UsernamePasswordAuthenticationToken(
+                        "testUser",
+                        null,
+                        List.of()
+                );
 
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(testUser));
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authentication);
+
+        when(userRepository.findByUsername(anyString()))
+                .thenReturn(Optional.of(testUser));
 
         UserResponseDto result = sut.getProfile();
 
@@ -195,16 +243,23 @@ public class UserServiceTest {
         assertEquals(testUser.getUsername(), result.getUsername());
         assertEquals(testUser.getEmail(), result.getEmail());
 
-        verify(userRepository, times(1)).findByUsername(anyString());
+        verify(userRepository, times(1))
+                .findByUsername(anyString());
     }
 
     @Test
     @DisplayName("getProfile should throw UserNotFoundException")
     void should_getProfile_throwUserNotFoundException() {
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getName()).thenReturn(null);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Authentication authentication =
+                mock(Authentication.class);
+
+        when(authentication.getName())
+                .thenReturn(null);
+
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authentication);
 
         UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
@@ -212,8 +267,13 @@ public class UserServiceTest {
                 "UserNotFoundException should be thrown"
         );
 
-        assertEquals("User not found !!", exception.getMessage());
-        verify(userRepository, never()).findByUsername(anyString());
+        assertEquals(
+                "User not found !!",
+                exception.getMessage()
+        );
+
+        verify(userRepository, never())
+                .findByUsername(anyString());
     }
 
     @Test
@@ -221,10 +281,14 @@ public class UserServiceTest {
     void should_deleteUser_deleteUserById() {
 
         Long id = 1L;
-        when(userRepository.existsById(id)).thenReturn(true);
+
+        when(userRepository.existsById(id))
+                .thenReturn(true);
 
         sut.deleteUser(id);
-        verify(userRepository, times(1)).deleteById(id);
+
+        verify(userRepository, times(1))
+                .deleteById(id);
     }
 
     @Test
@@ -232,62 +296,117 @@ public class UserServiceTest {
     void should_deleteUser_throwUserNotFoundException() {
 
         Long id = 99L;
-        when(userRepository.existsById(id)).thenReturn(false);
 
-        assertThrows(UserNotFoundException.class, () -> sut.deleteUser(id), "UserNotFoundException should be thrown");
-        verify(userRepository, never()).deleteById(id);
+        when(userRepository.existsById(id))
+                .thenReturn(false);
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> sut.deleteUser(id),
+                "UserNotFoundException should be thrown"
+        );
+
+        verify(userRepository, never())
+                .deleteById(id);
     }
 
     @Test
     @DisplayName("isOwner should return true")
     void should_isOwner_returnTrue() {
+
         Long id = 1L;
         String username = "testUser";
-        when(userRepository.existsByIdAndUsername(id, username)).thenReturn(true);
+
+        when(userRepository.existsByIdAndUsername(id, username))
+                .thenReturn(true);
 
         assertTrue(sut.isOwner(id, username));
-        verify(userRepository, times(1)).existsByIdAndUsername(id, username);
+
+        verify(userRepository, times(1))
+                .existsByIdAndUsername(id, username);
     }
 
     @Test
     @DisplayName("isOwner should return false")
     void should_isOwner_returnFalse() {
+
         Long id = 1L;
         String username = "otherUser";
-        when(userRepository.existsByIdAndUsername(id, username)).thenReturn(false);
+
+        when(userRepository.existsByIdAndUsername(id, username))
+                .thenReturn(false);
 
         assertFalse(sut.isOwner(id, username));
-        verify(userRepository, times(1)).existsByIdAndUsername(id, username);
+
+        verify(userRepository, times(1))
+                .existsByIdAndUsername(id, username);
     }
 
     @Test
     @DisplayName("updateUser should return updated User response dto")
     void should_updateUser_returnUserResponseDto() {
+
         Long id = 1L;
-        when(userRepository.findById(id)).thenReturn(Optional.of(testUser));
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
-        UserUpdateResponse result = sut.updateUser(id, userRequestDto);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        "testUser",
+                        null,
+                        List.of()
+                );
+
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authentication);
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.of(testUser));
+
+        when(userRepository.save(any(User.class)))
+                .thenReturn(testUser);
+
+        UserUpdateResponse result =
+                sut.updateUser(id, userRequestDto);
 
         assertNotNull(result);
-        assertEquals(testUser.getId(), result.getUser().getId());
-        assertEquals(testUser.getUsername(), result.getUser().getUsername());
+        assertNotNull(result.getUser());
 
-        verify(userRepository, times(1)).findById(id);
-        verify(userRepository, times(1)).save(any(User.class));
+        assertEquals(
+                testUser.getId(),
+                result.getUser().getId()
+        );
+
+        assertEquals(
+                testUser.getUsername(),
+                result.getUser().getUsername()
+        );
+
+        verify(userRepository, times(1))
+                .findById(id);
+
+        verify(userRepository, times(1))
+                .save(any(User.class));
     }
 
     @Test
     @DisplayName("updateUser should throw UserNotFoundException")
     void should_updateUser_throwUserNotFoundException() {
+
         Long id = 99L;
-        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.empty());
+
         assertThrows(
                 UserNotFoundException.class,
                 () -> sut.updateUser(id, userRequestDto),
                 "UserNotFoundException should be thrown"
         );
 
-        verify(userRepository, times(1)).findById(id);
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, times(1))
+                .findById(id);
+
+        verify(userRepository, never())
+                .save(any(User.class));
     }
 }
