@@ -25,5 +25,6 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    @Column(name = "user_id", insertable = false, updatable = false)
     private Long userId;
 }
