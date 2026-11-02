@@ -10,9 +10,11 @@ import com.example.entity.User;
 import com.example.dto.request.UserRequestDto;
 import com.example.exception.UserAlreadyExistsException;
 import com.example.mapper.UserMapper;
+import com.example.repository.TaskRepository;
 import com.example.service.IUserService;
 import com.example.repository.UserRepository;
 import com.example.service.jwt.JWTService;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +28,7 @@ import com.example.exception.UserNotFoundException;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
 
@@ -70,10 +73,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)){
+
+        if (!userRepository.existsById(id)) {
             throw new UserNotFoundException("User not found !!");
         }
+        taskRepository.deleteAllByUserId(id);
         userRepository.deleteById(id);
     }
 

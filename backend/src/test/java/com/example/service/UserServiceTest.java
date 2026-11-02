@@ -8,6 +8,7 @@ import com.example.dto.response.UserUpdateResponse;
 import com.example.entity.User;
 import com.example.exception.UserAlreadyExistsException;
 import com.example.exception.UserNotFoundException;
+import com.example.repository.TaskRepository;
 import com.example.repository.UserRepository;
 import com.example.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -43,6 +44,9 @@ public class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private TaskRepository taskRepository;
 
     private User testUser;
     private RegisterRequest registerRequest;
@@ -277,7 +281,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("deleteUser should delete user by id")
+    @DisplayName("deleteUser should delete user's tasks and then delete user")
     void should_deleteUser_deleteUserById() {
 
         Long id = 1L;
@@ -286,6 +290,12 @@ public class UserServiceTest {
                 .thenReturn(true);
 
         sut.deleteUser(id);
+
+        verify(userRepository, times(1))
+                .existsById(id);
+
+        verify(taskRepository, times(1))
+                .deleteAllByUserId(id);
 
         verify(userRepository, times(1))
                 .deleteById(id);
@@ -300,14 +310,24 @@ public class UserServiceTest {
         when(userRepository.existsById(id))
                 .thenReturn(false);
 
-        assertThrows(
+        UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
-                () -> sut.deleteUser(id),
-                "UserNotFoundException should be thrown"
+                () -> sut.deleteUser(id)
         );
 
+        assertEquals(
+                "User not found !!",
+                exception.getMessage()
+        );
+
+        verify(userRepository, times(1))
+                .existsById(id);
+
+        verify(taskRepository, never())
+                .deleteAllByUserId(anyLong());
+
         verify(userRepository, never())
-                .deleteById(id);
+                .deleteById(anyLong());
     }
 
     @Test
