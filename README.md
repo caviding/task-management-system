@@ -72,6 +72,7 @@ task-management-system/
 │   │   │       └── application.yml
 │   │   └── test/
 │   ├── pom.xml
+│   ├── Dockerfile
 │   ├── mvnw
 │   └── mvnw.cmd
 │
@@ -88,6 +89,7 @@ task-management-system/
 │   ├── index.html
 │   ├── package.json
 │   ├── package-lock.json
+│   ├── vercel.json
 │   └── README.md
 │
 ├── .gitignore
@@ -134,6 +136,7 @@ task-management-system/
 -   Sorting
 -   Filtering by user, status, and title
 -   Admin can manage tasks across users
+-   Tasks belonging to a user are deleted when that user is deleted
 
 ### Backend
 
@@ -170,6 +173,63 @@ The backend follows a layered architecture:
 -   **Mapper Layer** --- converts entities to DTOs.
 -   **Specification Layer** --- provides dynamic task filtering.
 -   **Exception Handler** --- provides centralized API error handling.
+
+## Live Demo
+
+The application is deployed and available online:
+
+- **Frontend:** https://task-management-system-ivory-five.vercel.app
+- **Backend API:** https://task-management-system-nnrc.onrender.com
+
+> The backend is hosted on Render's free tier, so the first request after a period of inactivity may take longer while the service starts.
+
+## Deployment
+
+The production application uses:
+
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** Aiven MySQL
+- **Source Control:** GitHub
+
+The backend is deployed as a Docker container using `backend/Dockerfile`.
+The frontend is deployed from the `frontend` directory and uses `vercel.json` for SPA routing.
+
+### Backend Environment Variables
+
+```text
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+```
+
+Sensitive values are configured in the hosting environment and are not stored in the repository.
+
+### Frontend Environment Variable
+
+```text
+VITE_API_BASE_URL
+```
+
+In production, this points to the deployed Render backend API.
+
+### Production Architecture
+
+```text
+Browser
+   |
+   v
+Vercel (React + Vite)
+   |
+   v
+Render (Spring Boot REST API)
+   |
+   v
+Aiven (MySQL)
+```
+
+The hosting services are connected to the GitHub repository so pushed changes can be deployed from the repository.
 
 ## Prerequisites
 
@@ -267,31 +327,31 @@ URL.
 
 ### Authentication
 
-  Method   Endpoint           Description
+Method   Endpoint           Description
   -------- ------------------ ------------------------------
-  POST     `/auth/register`   Register a user
-  POST     `/auth/login`      Authenticate and receive JWT
+POST     `/auth/register`   Register a user
+POST     `/auth/login`      Authenticate and receive JWT
 
 ### Users
 
-  Method   Endpoint        Description
+Method   Endpoint        Description
   -------- --------------- --------------------------
-  GET      `/users/me`     Get current user profile
-  GET      `/users`        Get users (Admin)
-  GET      `/users/{id}`   Get user by ID
-  PUT      `/users/{id}`   Update user
-  DELETE   `/users/{id}`   Delete user
+GET      `/users/me`     Get current user profile
+GET      `/users`        Get users (Admin)
+GET      `/users/{id}`   Get user by ID
+PUT      `/users/{id}`   Update user
+DELETE   `/users/{id}`   Delete user
 
 ### Tasks
 
-  Method   Endpoint               Description
+Method   Endpoint               Description
   -------- ---------------------- --------------------
-  GET      `/tasks`               Get tasks
-  GET      `/tasks/{id}`          Get task by ID
-  POST     `/tasks`               Create task
-  PUT      `/tasks/{id}`          Update task
-  PATCH    `/tasks/{id}/status`   Update task status
-  DELETE   `/tasks/{id}`          Delete task
+GET      `/tasks`               Get tasks
+GET      `/tasks/{id}`          Get task by ID
+POST     `/tasks`               Create task
+PUT      `/tasks/{id}`          Update task
+PATCH    `/tasks/{id}/status`   Update task status
+DELETE   `/tasks/{id}`          Delete task
 
 Task endpoints support authorization rules so normal users operate on
 their own tasks while administrators have additional management
@@ -358,12 +418,11 @@ repository.
 ## Future Improvements
 
 -   Swagger / OpenAPI documentation
--   Docker support
--   CI/CD pipeline
--   Production deployment
 -   Expanded integration testing
 -   Refresh-token authentication
 -   Improved responsive UI
+-   Dashboard UX improvements
+-   Optional CI pipeline for automated tests
 
 ## License
 
